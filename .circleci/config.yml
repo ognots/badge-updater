@@ -1,0 +1,44 @@
+version: 2.1
+
+commands:
+  update_badge:
+    parameters:
+      filename:
+        description: "filename of badge to update"
+        type: string
+      version:
+        description: "the version to set in badge"
+        type: string
+    steps:
+      - run:
+          name: install jq
+          command: |
+            apt-get update
+            apt-get install -y jq git
+      - run:
+          name: Update badge << parameters.filename >>
+          command: |
+            git config --global user.email ognots@protocol.ai
+            git config --global user.name ognots
+            git clone https://${GITHUB_TOKEN}@github.com/ognots/badges.git
+            cd badges
+            cat << parameters.filename >> | jq -r '.message = "<< parameters.version >>"' | tee << parameters.filename >>
+            git add << parameters.filename >>
+            git commit -m "badge update bot: update << parameters.filename >> to << parameters.version >>"
+            git push https://${GITHUB_TOKEN}@github.com/ognots/badges.git
+
+jobs:
+  badge_updater:
+    docker:
+      - image: debian:stretch
+    steps:
+      - checkout
+      - update_badge:
+          filename: "nightly-github.json"
+          version: "updater-success"
+
+workflows:
+  version: 2
+  main:
+    jobs:
+      - badge_updater
