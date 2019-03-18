@@ -19,7 +19,7 @@ commands:
             git config --global user.name filecoin-helper
             git clone https://${GITHUB_TOKEN}@github.com/ognots/badges.git
             cd badges
-            cat << parameters.filename >> | jq --arg FILECOIN_BINARY_VERSION "${FILECOIN_BINARY_VERSION}" -r '.message = $FILECOIN_BINARY_VERSION}' | tee << parameters.filename >>
+            cat << parameters.filename >> | jq --arg FILECOIN_BINARY_VERSION "${FILECOIN_BINARY_VERSION}" -r '.message = $FILECOIN_BINARY_VERSION' | tee << parameters.filename >>
             git add << parameters.filename >>
             git commit -m "badge update bot: update << parameters.filename >> to ${FILECOIN_BINARY_VERSION}"
             git push https://${GITHUB_TOKEN}@github.com/ognots/badges.git
