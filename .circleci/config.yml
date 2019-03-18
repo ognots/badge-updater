@@ -6,9 +6,6 @@ commands:
       filename:
         description: "filename of badge to update"
         type: string
-      version:
-        description: "the version to set in badge"
-        type: string
     steps:
       - run:
           name: install jq
@@ -18,13 +15,13 @@ commands:
       - run:
           name: Update badge << parameters.filename >>
           command: |
-            git config --global user.email ognots@protocol.ai
-            git config --global user.name ognots
+            git config --global user.email dev-helper@filecoin.io
+            git config --global user.name filecoin-helper
             git clone https://${GITHUB_TOKEN}@github.com/ognots/badges.git
             cd badges
-            cat << parameters.filename >> | jq -r '.message = "<< parameters.version >>"' | tee << parameters.filename >>
+            cat << parameters.filename >> | jq --arg FILECOIN_BINARY_VERSION "${FILECOIN_BINARY_VERSION}" -r '.message = $FILECOIN_BINARY_VERSION}' | tee << parameters.filename >>
             git add << parameters.filename >>
-            git commit -m "badge update bot: update << parameters.filename >> to << parameters.version >>"
+            git commit -m "badge update bot: update << parameters.filename >> to ${FILECOIN_BINARY_VERSION}"
             git push https://${GITHUB_TOKEN}@github.com/ognots/badges.git
 
 jobs:
@@ -33,9 +30,11 @@ jobs:
       - image: debian:stretch
     steps:
       - checkout
+      - run:
+          command: |
+            echo "export FILECOIN_BINARY_VERSION="ognots-test"" >> $BASH_ENV
       - update_badge:
           filename: "nightly-github.json"
-          version: "updater-success"
 
 workflows:
   version: 2
